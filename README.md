@@ -28,7 +28,7 @@ Cross Platform <br>
 
 
 <picture><img alt="note" height="40" src="https://raw.githubusercontent.com/LexyGuru/API_Warframe_Cross_GUI/main/Icons/git/note.svg"></picture>
-> Látogasson el a [IOS App](https://github.com/LexyGuru/Warframe_Api_IOS) oldalra<br>
+> Látogasson el a [IOS App](https://github.com/LexyGuru/Warframe_Api_IOS) oldalra<br> 
 > Látogasson el a [MacOS App](https://github.com/LexyGuru/Warframe_Api_MacOS) oldalra <br>
 > Látogasson el a ~~Windows / Linux App~~ oldalra <br>
 
@@ -59,7 +59,15 @@ A programok jelenleg fejlesztés és tesztelés alatt állnak. Az alkalmazások 
 ## Update Infok
 
 > ``MacOS`` 
+
 [Swift App] <img alt="danger" height="15" src="https://raw.githubusercontent.com/LexyGuru/Warframe_Api_Main/main/Icons/git/error.svg"><br>
-> ``Windows`` / ``Linux`` [Python Qt6 App] <img alt="danger" height="15" src="https://raw.githubusercontent.com/LexyGuru/Warframe_Api_Main/main/Icons/git/error.svg"><br>
-> ``iOS`` [Swift App] <img alt="danger" height="15" src="https://raw.githubusercontent.com/LexyGuru/Warframe_Api_Main/main/Icons/git/error.svg"><br>
+[Python Qt6 App] <img alt="danger" height="15" src="https://raw.githubusercontent.com/LexyGuru/Warframe_Api_Main/main/Icons/git/error.svg"><br>
+
+> ``Windows`` / ``Linux`` 
+
+[Python Qt6 App] <img alt="danger" height="15" src="https://raw.githubusercontent.com/LexyGuru/Warframe_Api_Main/main/Icons/git/error.svg"><br>
+
+> ``iOS`` **NOT LICENSE XCODE**
+ 
+[Swift App] <img alt="danger" height="15" src="https://raw.githubusercontent.com/LexyGuru/Warframe_Api_Main/main/Icons/git/error.svg"><br>
 
