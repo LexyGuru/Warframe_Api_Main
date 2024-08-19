@@ -1,7 +1,7 @@
 
 <h1 align="center">
   <br>
-  <a href="https://github.com/LexyGuru/API_Warframe_Cross_GUI"><img src="Icons/None.png" alt="Lekszikov" width="200"></a>
+  <a href="https://github.com/LexyGuru/Warframe_Api_Main"><img src="Icons/None.png" alt="Lekszikov" width="200"></a>
   <br>
   Lekszikov Miklos
   <br>
@@ -24,13 +24,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 <picture><img alt="Info" height="40" src="https://raw.githubusercontent.com/LexyGuru/Warframe_Api_Main/main/Icons/git/info.svg"><br></picture> 
 
 Cross Platform <br>
-``MacOS`` ``Windows`` ``Linux`` ``iOS``<br><br>
+``MacOS`` ``Windows`` ``Linux`` <br><br>
 
 
 <picture><img alt="note" height="40" src="https://raw.githubusercontent.com/LexyGuru/API_Warframe_Cross_GUI/main/Icons/git/note.svg"></picture>
-> Látogasson el a [IOS App](https://github.com/LexyGuru/Warframe_Api_IOS) oldalra<br> 
 > Látogasson el a [MacOS App](https://github.com/LexyGuru/Warframe_Api_MacOS) oldalra <br>
-> Látogasson el a ~~Windows / Linux App~~ oldalra <br>
+> Látogasson el a [Windows / Linux App](https://github.com/LexyGuru/Warframe_Api_MacOS) oldalra <br>
 
 <br><br><br>
 <picture><img alt="danger" height="40" src="https://raw.githubusercontent.com/LexyGuru/Warframe_Api_Main/main/Icons/git/danger.svg"><br></picture> 
@@ -66,8 +65,4 @@ A programok jelenleg fejlesztés és tesztelés alatt állnak. Az alkalmazások 
 > ``Windows`` / ``Linux`` 
 
 [Python Qt6 App] <img alt="danger" height="15" src="https://raw.githubusercontent.com/LexyGuru/Warframe_Api_Main/main/Icons/git/error.svg"><br>
-
-> ``iOS`` **NOT LICENSE XCODE**
- 
-[Swift App] <img alt="danger" height="15" src="https://raw.githubusercontent.com/LexyGuru/Warframe_Api_Main/main/Icons/git/error.svg"><br>
 
