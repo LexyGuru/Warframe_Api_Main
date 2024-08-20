@@ -1,5 +1,5 @@
-const API_URL = 'https://api.github.com/repos/LexyGuru/API_Warframe_Cross_GUI/commits';
-const REPO_URL = 'https://github.com/LexyGuru/API_Warframe_Cross_GUI/commit/';
+const API_URL = 'https://api.github.com/repos/LexyGuru/Warframe_Api_Main/commits';
+const REPO_URL = 'https://github.com/LexyGuru/Warframe_Api_Main/commit/';
 
 async function fetchCommits() {
     try {

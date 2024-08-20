@@ -91,35 +91,35 @@
         border-radius: 5px;
     }
 
-.wiki-link {
-    display: inline-block;
-    padding: 5px 10px;
-    background-color: #4CAF50;
-    color: white;
-    text-decoration: none;
-    border-radius: 3px;
-}
-
-.wiki-link:hover {
-    background-color: #45a049;
-}
-
-        .common { background-color: #3498db; color: white; }
-       .uncommon { background-color: #2ecc71; color: white; }
-       .rare { background-color: #f39c12; color: white; }
-
-@media (max-width: 768px) {
-    .result-content {
-        flex-direction: column;
+    .wiki-link {
+        display: inline-block;
+        padding: 5px 10px;
+        background-color: #4CAF50;
+        color: white;
+        text-decoration: none;
+        border-radius: 3px;
     }
 
-    .result-info {
-        padding-right: 0;
-        margin-bottom: 20px;
+    .wiki-link:hover {
+        background-color: #45a049;
     }
 
-    .result-image-container {
-        flex: none;
+    .common { background-color: #3498db; color: white; }
+    .uncommon { background-color: #2ecc71; color: white; }
+    .rare { background-color: #f39c12; color: white; }
+
+    @media (max-width: 768px) {
+        .result-content {
+            flex-direction: column;
+        }
+
+        .result-info {
+            padding-right: 0;
+            margin-bottom: 20px;
+        }
+
+        .result-image-container {
+            flex: none;
+        }
     }
-}
 </style>
