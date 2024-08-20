@@ -11,10 +11,9 @@
   <a href="https://github.com/LexyGuru/Warframe_Api_Main/graphs/contributors">
     <img src="https://img.shields.io/github/contributors/LexyGuru/Warframe_Api_Main" alt="Contributors">
   </a>
-  <a href="https://github.com/LexyGuru/API_Warframe_Cross_GUI/issues">
+  <a href="https://github.com/LexyGuru/Warframe_Api_Main/issues">
     <img src="https://img.shields.io/github/commit-activity/t/LexyGuru/Warframe_Api_Main" alt="Commit Activity">
   </a>
-
 </p>
 
 ## License
@@ -29,7 +28,7 @@ Cross Platform <br>
 
 <picture><img alt="note" height="40" src="https://raw.githubusercontent.com/LexyGuru/API_Warframe_Cross_GUI/main/Icons/git/note.svg"></picture>
 > Látogasson el a [MacOS App](https://github.com/LexyGuru/Warframe_Api_MacOS) oldalra <br>
-> Látogasson el a [Windows / Linux App](https://github.com/LexyGuru/Warframe_Api_MacOS) oldalra <br>
+> Látogasson el a [Windows / Linux App](https://github.com/LexyGuru/Warframe_Api_Cross) oldalra <br>
 
 <br><br><br>
 <picture><img alt="danger" height="40" src="https://raw.githubusercontent.com/LexyGuru/Warframe_Api_Main/main/Icons/git/danger.svg"><br></picture> 
