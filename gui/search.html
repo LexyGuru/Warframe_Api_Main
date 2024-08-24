@@ -202,13 +202,24 @@
 </head>
 <body>
     <div class="container">
-        <h1>Warframe Search</h1>
-        <div class="search-box">
-            <input type="text" id="search-input" placeholder="Enter search term...">
-            <button id="search-button">Search</button>
-        </div>
-        <div id="results" class="results-container"></div>
+    <h1>Warframe Search</h1>
+
+    <div class="search-options">
+        <label>
+            <input type="checkbox" id="show-prime" checked> Show Prime Items
+        </label>
+        <label>
+            <input type="checkbox" id="show-wiki" checked> Show Wiki Links
+        </label>
     </div>
-    <script src="Script/search.js" defer></script>
+
+    <div class="search-box">
+        <input type="text" id="search-input" placeholder="Search...">
+        <button id="search-button">Search</button>
+    </div>
+
+    <div id="results" class="results-container">
+    </div>
+</div>
 </body>
 </html>
