@@ -114,11 +114,7 @@ function searchDrops() {
                     <div class="result-card">
                         <div class="result-content">
                             <div class="result-info">
-                                //<h2 class="result-title">${item.name}</h2>
-                                //<div class="result-details">Type: ${item.type || 'N/A'}</div>
                                 <h2 class="result-title">${item.name}</h2>
-                                <div class="result-details">Location: ${item.place}</div>
-                                <div class="result-details">Chance: ${item.chance}%</div>
                                 <div class="result-details">Type: ${item.type || 'N/A'}</div>
                                 ${item.description ? `<div class="result-description">${item.description}</div>` : ''}
                                 ${statsHtml}
@@ -140,19 +136,24 @@ function searchDrops() {
 
         $("#results").html(resultsHtml);
 
-        setTimeout(function() {
-            console.log("Delayed image loading check");
-            checkImages();
-        }, 1000);
+        // Itt adjuk hozzá az időzítést és a képellenőrzést
+            setTimeout(function() {
+                console.log("Delayed image loading check");
+                checkImages();
+            }, 1000);  // 1 másodperces késleltetés
+
+        }).fail(function() {
+            $("#results").html("<p>Error occurred while searching for items. Please try again later.</p>");
+        });
     }).fail(function() {
-        $("#results").html("<p>Error occurred while searching for items. Please try again later.</p>");
+        $("#results").html("<p>Error occurred while searching for drops. Please try again later.</p>");
     });
 }
 
 function checkImages() {
     $('.result-image').each(function() {
         if (!this.complete || this.naturalWidth === 0) {
-            console.log("Image failed to load:", this.src);
+            console.error("Image failed to load:", this.src);
             $(this).attr('src', 'path/to/placeholder-image.png');
         } else {
             console.log("Image loaded successfully:", this.src);
@@ -160,9 +161,10 @@ function checkImages() {
     });
 }
 
+// Képbetöltés eseményfigyelők
 $(document).on('load', '.result-image', function() {
     console.log('Image loaded event:', this.src);
 }).on('error', '.result-image', function() {
-    console.log('Image failed to load event:', this.src);
+    console.error('Image failed to load event:', this.src);
     $(this).attr('src', 'path/to/placeholder-image.png');
 });
