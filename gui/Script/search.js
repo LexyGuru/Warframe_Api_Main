@@ -114,7 +114,11 @@ function searchDrops() {
                     <div class="result-card">
                         <div class="result-content">
                             <div class="result-info">
+                                //<h2 class="result-title">${item.name}</h2>
+                                //<div class="result-details">Type: ${item.type || 'N/A'}</div>
                                 <h2 class="result-title">${item.name}</h2>
+                                <div class="result-details">Location: ${item.place}</div>
+                                <div class="result-details">Chance: ${item.chance}%</div>
                                 <div class="result-details">Type: ${item.type || 'N/A'}</div>
                                 ${item.description ? `<div class="result-description">${item.description}</div>` : ''}
                                 ${statsHtml}
