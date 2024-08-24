@@ -59,9 +59,9 @@ A programok jelenleg fejlesztés és tesztelés alatt állnak. Az alkalmazások 
 > ``MacOS`` 
 
 [Swift App] <img alt="danger" height="15" src="https://raw.githubusercontent.com/LexyGuru/Warframe_Api_Main/main/Icons/git/error.svg"><br>
-[Python Qt6 App] <img alt="danger" height="15" src="https://raw.githubusercontent.com/LexyGuru/Warframe_Api_Main/main/Icons/git/error.svg"><br>
+[Python App] <img alt="danger" height="15" src="https://raw.githubusercontent.com/LexyGuru/Warframe_Api_Main/main/Icons/git/error.svg"><br>
 
 > ``Windows`` / ``Linux`` 
 
-[Python Qt6 App] <img alt="danger" height="15" src="https://raw.githubusercontent.com/LexyGuru/Warframe_Api_Main/main/Icons/git/error.svg"><br>
+[Python App] <img alt="danger" height="15" src="https://raw.githubusercontent.com/LexyGuru/Warframe_Api_Main/main/Icons/git/error.svg"><br>
 
