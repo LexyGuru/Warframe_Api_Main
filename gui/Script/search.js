@@ -138,7 +138,7 @@ function searchDrops() {
                                 </div>
                                 <div class="result-image-container">
                                     ${item.wikiaThumbnail ? `<img src="${item.wikiaThumbnail}" alt="${item.name}" class="result-image">` : ''}
-                                    <a href="${wikiUrl}" target="_blank" class="wiki-link">Wiki Page</a>
+                                    ${showWiki ? `<a href="${wikiUrl}" target="_blank" class="wiki-link">Wiki Page</a>` : ''}
                                 </div>
                             </div>
                         </div>
