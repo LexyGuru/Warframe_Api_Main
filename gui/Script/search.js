@@ -71,7 +71,7 @@ function searchDrops() {
 
     let resultsHtml = "";
 
-     // First, search for drops
+    // First, search for drops
     $.getJSON(`https://api.warframestat.us/drops/search/${searchTerm}`, function(dropData) {
         if (dropData.length > 0) {
             dropData.forEach(item => {
@@ -89,8 +89,16 @@ function searchDrops() {
             });
         }
 
-        // Then, search for items
-        $.getJSON(`https://api.warframestat.us/items/search/${searchTerm}`, function(itemData) {
+    $.getJSON(`https://api.warframestat.us/items/search/${searchTerm}`, function(itemData) {
+        if (itemData.length > 0) {
+            itemData.forEach(item => {
+                if (!showPrime && item.name.toLowerCase().includes('prime')) {
+                    return;
+                }
+
+                let statsHtml = '';
+                let acquisitionHtml = '';
+
                 if (item.type && item.type.toLowerCase().includes('mod')) {
                     if (item.levelStats) {
                         statsHtml += '<div class="result-stats"><strong>Level Stats:</strong><table class="level-stats-table">';
