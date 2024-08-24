@@ -58,7 +58,6 @@ function getRarity(chance) {
 function searchDrops() {
     console.log("Search function called");
     const searchTerm = $("#search-input").val();
-
     const showPrime = $("#show-prime").prop('checked');
     const showWiki = $("#show-wiki").prop('checked');
 
@@ -70,24 +69,6 @@ function searchDrops() {
     $("#results").html("<p>Searching...</p>");
 
     let resultsHtml = "";
-
-    // First, search for drops
-    $.getJSON(`https://api.warframestat.us/drops/search/${searchTerm}`, function(dropData) {
-        if (dropData.length > 0) {
-            dropData.forEach(item => {
-                let rarity = getRarity(item.chance);
-                resultsHtml += `
-                    <div class="result-card">
-                        <div class="result-info">
-                            <div class="result-title">${item.item}</div>
-                            <div class="result-details">Location: ${item.place}</div>
-                            <div class="result-details">Chance: ${item.chance}%</div>
-                        </div>
-                        <span class="rarity ${rarity.toLowerCase()}">${rarity}</span>
-                    </div>
-                `;
-            });
-        }
 
     $.getJSON(`https://api.warframestat.us/items/search/${searchTerm}`, function(itemData) {
         if (itemData.length > 0) {
@@ -107,12 +88,15 @@ function searchDrops() {
                         });
                         statsHtml += '</table></div>';
                     }
+
                     if (item.polarity) {
                         statsHtml += `<div class="result-stats"><strong>Polarity:</strong> ${item.polarity}</div>`;
                     }
+
                     if (item.rarity) {
                         statsHtml += `<div class="result-stats"><strong>Rarity:</strong> ${item.rarity}</div>`;
                     }
+
                     if (item.fusionLimit) {
                         statsHtml += `<div class="result-stats"><strong>Max Rank:</strong> ${item.fusionLimit}</div>`;
                     }
