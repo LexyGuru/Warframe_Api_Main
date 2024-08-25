@@ -98,7 +98,7 @@ function processSearchResults(itemData, dropData, showPrime, showWiki) {
     let resultsHtml = "";
 
     // Item adatok feldolgozása
-    if (itemData.length > 0) {
+    if (itemData && itemData.length > 0) {
         itemData.forEach(item => {
             if (!showPrime && item.name.toLowerCase().includes('prime')) {
                 return;
@@ -108,19 +108,9 @@ function processSearchResults(itemData, dropData, showPrime, showWiki) {
     }
 
     // Drop adatok feldolgozása
-    if (dropData.length > 0) {
+    if (dropData && dropData.length > 0) {
         dropData.forEach(item => {
-            let rarity = getRarity(item.chance);
-            resultsHtml += `
-                <div class="result-card">
-                    <div class="result-info">
-                        <div class="result-title">${item.item}</div>
-                        <div class="result-details">Location: ${item.place}</div>
-                        <div class="result-details">Chance: ${item.chance}%</div>
-                    </div>
-                    <span class="rarity ${rarity.toLowerCase()}">${rarity}</span>
-                </div>
-            `;
+            resultsHtml += createDropCard(item);
         });
     }
 
@@ -153,6 +143,22 @@ function createItemCard(item, showWiki) {
                     ${showWiki ? `<a href="${wikiUrl}" class="wiki-link">Wiki Page</a>` : ''}
                 </div>
             </div>
+        </div>
+    `;
+}
+
+// Drop kártya létrehozása
+function createDropCard(item) {
+    let rarity = getRarity(item.chance);
+    return `
+        <div class="result-card">
+            <div class="result-info">
+                <div class="result-title">${item.item}</div>
+                <div class="result-details">Location: ${item.place}</div>
+                <div class="result-details">Chance: ${item.chance}%</div>
+                <div class="result-details">Rarity: ${rarity}</div>
+            </div>
+            <span class="rarity ${rarity.toLowerCase()}">${rarity}</span>
         </div>
     `;
 }
@@ -195,6 +201,8 @@ function checkImages() {
         if (!this.complete || this.naturalWidth === 0) {
             console.warn("Image failed to load:", this.src);
             $(this).attr('src', PLACEHOLDER_IMAGE_URL);
+        } else {
+            console.log("Image loaded successfully:", this.src);
         }
     });
 }
