@@ -1,6 +1,7 @@
 // Globális változók
 let pyotherside;
-const API_BASE_URL = 'https://api.warframestat.us/items/search/';
+const ITEM_API_URL = 'https://api.warframestat.us/items/search/';
+const DROP_API_URL = 'https://api.warframestat.us/drops/search/';
 const PLACEHOLDER_IMAGE_URL = '/path/to/your/placeholder-image.png'; // Frissítse ezt a valós elérési úttal
 
 // QWebChannel inicializálás
@@ -27,10 +28,10 @@ document.addEventListener("DOMContentLoaded", function() {
 function initSearch() {
     console.log("Search initialization started");
 
-    $("#search-button").on('click', searchDrops);
+    $("#search-button").on('click', searchWarframe);
     $("#search-input").on('keyup', function(e) {
         if (e.key === 'Enter') {
-            searchDrops();
+            searchWarframe();
         }
     });
 
@@ -55,7 +56,7 @@ function getRarity(chance) {
 }
 
 // Fő keresési funkció
-function searchDrops() {
+function searchWarframe() {
     console.log("Search function called");
     const searchTerm = $("#search-input").val();
     const showPrime = $("#show-prime").prop('checked');
@@ -68,32 +69,58 @@ function searchDrops() {
 
     $("#results").html("<p>Searching...</p>");
 
-    $.ajax({
-        url: API_BASE_URL + encodeURIComponent(searchTerm),
-        method: 'GET',
-        dataType: 'json',
-        timeout: 10000, // 10 másodperces timeout
-        success: function(itemData) {
-            processSearchResults(itemData, showPrime, showWiki);
-        },
-        error: function(jqXHR, textStatus, errorThrown) {
-            $("#results").html("<p>Error occurred while searching. Please try again later. Error: " + textStatus + "</p>");
-            console.error("API call failed:", errorThrown);
-        }
+    // Párhuzamos API hívások
+    $.when(
+        $.ajax({
+            url: ITEM_API_URL + encodeURIComponent(searchTerm),
+            method: 'GET',
+            dataType: 'json',
+            timeout: 10000
+        }),
+        $.ajax({
+            url: DROP_API_URL + encodeURIComponent(searchTerm),
+            method: 'GET',
+            dataType: 'json',
+            timeout: 10000
+        })
+    ).done(function(itemResponse, dropResponse) {
+        const itemData = itemResponse[0];
+        const dropData = dropResponse[0];
+        processSearchResults(itemData, dropData, showPrime, showWiki);
+    }).fail(function(jqXHR, textStatus, errorThrown) {
+        $("#results").html("<p>Error occurred while searching. Please try again later. Error: " + textStatus + "</p>");
+        console.error("API call failed:", errorThrown);
     });
 }
 
 // Keresési eredmények feldolgozása
-function processSearchResults(itemData, showPrime, showWiki) {
+function processSearchResults(itemData, dropData, showPrime, showWiki) {
     let resultsHtml = "";
 
+    // Item adatok feldolgozása
     if (itemData.length > 0) {
         itemData.forEach(item => {
             if (!showPrime && item.name.toLowerCase().includes('prime')) {
                 return;
             }
-
             resultsHtml += createItemCard(item, showWiki);
+        });
+    }
+
+    // Drop adatok feldolgozása
+    if (dropData.length > 0) {
+        dropData.forEach(item => {
+            let rarity = getRarity(item.chance);
+            resultsHtml += `
+                <div class="result-card">
+                    <div class="result-info">
+                        <div class="result-title">${item.item}</div>
+                        <div class="result-details">Location: ${item.place}</div>
+                        <div class="result-details">Chance: ${item.chance}%</div>
+                    </div>
+                    <span class="rarity ${rarity.toLowerCase()}">${rarity}</span>
+                </div>
+            `;
         });
     }
 
