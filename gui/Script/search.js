@@ -89,9 +89,9 @@ function searchDrops() {
         $.getJSON(`https://api.warframestat.us/items/search/${searchTerm}`, function(itemData) {
             if (itemData.length > 0) {
                 itemData.forEach(item => {
-                if (!showPrime && item.name.toLowerCase().includes('prime')) {
-                    return;
-                }
+                    if (!showPrime && item.name.toLowerCase().includes('prime')) {
+                        return;
+                    }
                     let statsHtml = '';
                     let acquisitionHtml = '';
 
