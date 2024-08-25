@@ -1,10 +1,6 @@
-// Globális változók
+console.log('Search script loaded');
 let pyotherside;
-const ITEM_API_URL = 'https://api.warframestat.us/items/search/';
-const DROP_API_URL = 'https://api.warframestat.us/drops/search/';
-const PLACEHOLDER_IMAGE_URL = '/path/to/your/placeholder-image.png'; // Frissítse ezt a valós elérési úttal
 
-// QWebChannel inicializálás
 function initWebChannel() {
     if (typeof QWebChannel === "undefined") {
         console.log("QWebChannel not available yet, retrying...");
@@ -12,34 +8,37 @@ function initWebChannel() {
         return;
     }
     new QWebChannel(qt.webChannelTransport, function (channel) {
-        pyotherside = channel.objects.pyotherside;
+        window.pyotherside = channel.objects.pyotherside;
         console.log("QWebChannel initialized");
         initSearch();
     });
 }
 
-// DOM betöltés eseménykezelő
 document.addEventListener("DOMContentLoaded", function() {
     console.log("DOM fully loaded");
     initWebChannel();
 });
 
-// Keresés inicializálás
 function initSearch() {
     console.log("Search initialization started");
 
-    $("#search-button").on('click', searchWarframe);
+    $("#search-button").on('click', function() {
+        console.log("Search button clicked");
+        searchDrops();
+    });
+
     $("#search-input").on('keyup', function(e) {
         if (e.key === 'Enter') {
-            searchWarframe();
+            console.log("Enter key pressed");
+            searchDrops();
         }
     });
 
     $(document).on('click', '.wiki-link', function(e) {
         e.preventDefault();
         let url = $(this).attr('href');
-        if (pyotherside && pyotherside.open_url) {
-            pyotherside.open_url(url);
+        if (window.pyotherside && window.pyotherside.open_url) {
+            window.pyotherside.open_url(url);
         } else {
             window.open(url, '_blank');
         }
@@ -48,15 +47,13 @@ function initSearch() {
     console.log("Search initialization completed");
 }
 
-// Ritkaság meghatározása
 function getRarity(chance) {
     if (chance < 5) return "Rare";
     if (chance < 15) return "Uncommon";
     return "Common";
 }
 
-// Fő keresési funkció
-function searchWarframe() {
+function searchDrops() {
     console.log("Search function called");
     const searchTerm = $("#search-input").val();
     const showPrime = $("#show-prime").prop('checked');
@@ -69,138 +66,116 @@ function searchWarframe() {
 
     $("#results").html("<p>Searching...</p>");
 
-    // Párhuzamos API hívások
-    $.when(
-        $.ajax({
-            url: ITEM_API_URL + encodeURIComponent(searchTerm),
-            method: 'GET',
-            dataType: 'json',
-            timeout: 10000
-        }),
-        $.ajax({
-            url: DROP_API_URL + encodeURIComponent(searchTerm),
-            method: 'GET',
-            dataType: 'json',
-            timeout: 10000
-        })
-    ).done(function(itemResponse, dropResponse) {
-        const itemData = itemResponse[0];
-        const dropData = dropResponse[0];
-        processSearchResults(itemData, dropData, showPrime, showWiki);
-    }).fail(function(jqXHR, textStatus, errorThrown) {
-        $("#results").html("<p>Error occurred while searching. Please try again later. Error: " + textStatus + "</p>");
-        console.error("API call failed:", errorThrown);
+    let resultsHtml = "";
+
+    // First, search for drops
+    $.getJSON(`https://api.warframestat.us/drops/search/${searchTerm}`, function(dropData) {
+        if (dropData.length > 0) {
+            dropData.forEach(item => {
+                let rarity = getRarity(item.chance);
+                resultsHtml += `
+                    <div class="result-card">
+                        <div class="result-info">
+                            <div class="result-title">${item.item}</div>
+                            <div class="result-details">Location: ${item.place}</div>
+                            <div class="result-details">Chance: ${item.chance}%</div>
+                        </div>
+                        <span class="rarity ${rarity.toLowerCase()}">${rarity}</span>
+                    </div>
+                `;
+            });
+        }
+
+        // Then, search for items
+        $.getJSON(`https://api.warframestat.us/items/search/${searchTerm}`, function(itemData) {
+            if (itemData.length > 0) {
+                itemData.forEach(item => {
+                    if (!showPrime && item.name.toLowerCase().includes('prime')) {
+                        return;
+                    }
+
+                    let statsHtml = '';
+                    let acquisitionHtml = '';
+
+                    // Mod-specifikus információk
+                    if (item.type && item.type.toLowerCase().includes('mod')) {
+                        if (item.levelStats) {
+                            statsHtml += '<div class="result-stats"><strong>Level Stats:</strong><table class="level-stats-table">';
+                            item.levelStats.forEach((stat, index) => {
+                                statsHtml += `<tr><td>Rank ${index}</td><td>${stat.stats.join(', ')}</td></tr>`;
+                            });
+                            statsHtml += '</table></div>';
+                        }
+
+                        if (item.polarity) {
+                            statsHtml += `<div class="result-stats"><strong>Polarity:</strong> ${item.polarity}</div>`;
+                        }
+
+                        if (item.rarity) {
+                            statsHtml += `<div class="result-stats"><strong>Rarity:</strong> ${item.rarity}</div>`;
+                        }
+
+                        if (item.fusionLimit) {
+                            statsHtml += `<div class="result-stats"><strong>Max Rank:</strong> ${item.fusionLimit}</div>`;
+                        }
+                    }
+
+                    // Megszerzési információk
+                    if (item.drop) {
+                        acquisitionHtml += '<div class="result-acquisition"><strong>Drops:</strong><ul>';
+                        item.drop.forEach(drop => {
+                            acquisitionHtml += `<li>${drop.location}: ${drop.chance}%</li>`;
+                        });
+                        acquisitionHtml += '</ul></div>';
+                    }
+
+                    let wikiUrl = item.wikiaUrl || `https://warframe.fandom.com/wiki/${encodeURIComponent(item.name.replace(/ /g, '_'))}`;
+
+                    resultsHtml += `
+                        <div class="result-card">
+                            <div class="result-content">
+                                <div class="result-info">
+                                    <h2 class="result-title">${item.name}</h2>
+                                    <div class="result-details">Type: ${item.type || 'N/A'}</div>
+                                    ${item.description ? `<div class="result-description">${item.description}</div>` : ''}
+                                    ${statsHtml}
+                                    ${acquisitionHtml}
+                                </div>
+                                <div class="result-image-container">
+                                    ${item.wikiaThumbnail ? `<img src="${item.wikiaThumbnail}" alt="${item.name}" class="result-image">` : ''}
+                                    ${showWiki ? `<a href="${wikiUrl}" class="wiki-link">Wiki Page</a>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            if (resultsHtml === "") {
+                resultsHtml = "<p>No results found for the search term.</p>";
+            }
+
+            $("#results").html(resultsHtml);
+
+            // Itt adjuk hozzá az időzítést és a képellenőrzést
+            setTimeout(function() {
+                console.log("Delayed image loading check");
+                checkImages();
+            }, 1000);  // 1 másodperces késleltetés
+
+        }).fail(function() {
+            $("#results").html("<p>Error occurred while searching for items. Please try again later.</p>");
+        });
+    }).fail(function() {
+        $("#results").html("<p>Error occurred while searching for drops. Please try again later.</p>");
     });
 }
 
-// Keresési eredmények feldolgozása
-function processSearchResults(itemData, dropData, showPrime, showWiki) {
-    let resultsHtml = "";
-
-    // Item adatok feldolgozása
-    if (itemData && itemData.length > 0) {
-        itemData.forEach(item => {
-            if (!showPrime && item.name.toLowerCase().includes('prime')) {
-                return;
-            }
-            resultsHtml += createItemCard(item, showWiki);
-        });
-    }
-
-    // Drop adatok feldolgozása
-    if (dropData && dropData.length > 0) {
-        dropData.forEach(item => {
-            resultsHtml += createDropCard(item);
-        });
-    }
-
-    if (resultsHtml === "") {
-        resultsHtml = "<p>No results found for the search term.</p>";
-    }
-
-    $("#results").html(resultsHtml);
-    setTimeout(checkImages, 1000);
-}
-
-// Elem kártya létrehozása
-function createItemCard(item, showWiki) {
-    let statsHtml = createStatsHtml(item);
-    let acquisitionHtml = createAcquisitionHtml(item);
-    let wikiUrl = item.wikiaUrl || `https://warframe.fandom.com/wiki/${encodeURIComponent(item.name.replace(/ /g, '_'))}`;
-
-    return `
-        <div class="result-card">
-            <div class="result-content">
-                <div class="result-info">
-                    <h2 class="result-title">${item.name}</h2>
-                    <div class="result-details">Type: ${item.type || 'N/A'}</div>
-                    ${item.description ? `<div class="result-description">${item.description}</div>` : ''}
-                    ${statsHtml}
-                    ${acquisitionHtml}
-                </div>
-                <div class="result-image-container">
-                    ${item.wikiaThumbnail ? `<img src="${item.wikiaThumbnail}" alt="${item.name}" class="result-image">` : ''}
-                    ${showWiki ? `<a href="${wikiUrl}" class="wiki-link">Wiki Page</a>` : ''}
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-// Drop kártya létrehozása
-function createDropCard(item) {
-    let rarity = getRarity(item.chance);
-    return `
-        <div class="result-card">
-            <div class="result-info">
-                <div class="result-title">${item.item}</div>
-                <div class="result-details">Location: ${item.place}</div>
-                <div class="result-details">Chance: ${item.chance}%</div>
-                <div class="result-details">Rarity: ${rarity}</div>
-            </div>
-            <span class="rarity ${rarity.toLowerCase()}">${rarity}</span>
-        </div>
-    `;
-}
-
-// Statisztikák HTML létrehozása
-function createStatsHtml(item) {
-    let statsHtml = '';
-    if (item.type && item.type.toLowerCase().includes('mod')) {
-        if (item.levelStats) {
-            statsHtml += '<div class="result-stats"><strong>Level Stats:</strong><table class="level-stats-table">';
-            item.levelStats.forEach((stat, index) => {
-                statsHtml += `<tr><td>Rank ${index}</td><td>${stat.stats.join(', ')}</td></tr>`;
-            });
-            statsHtml += '</table></div>';
-        }
-        if (item.polarity) statsHtml += `<div class="result-stats"><strong>Polarity:</strong> ${item.polarity}</div>`;
-        if (item.rarity) statsHtml += `<div class="result-stats"><strong>Rarity:</strong> ${item.rarity}</div>`;
-        if (item.fusionLimit) statsHtml += `<div class="result-stats"><strong>Max Rank:</strong> ${item.fusionLimit}</div>`;
-    }
-    return statsHtml;
-}
-
-// Beszerzési információk HTML létrehozása
-function createAcquisitionHtml(item) {
-    let acquisitionHtml = '';
-    if (item.drop && item.drop.length > 0) {
-        acquisitionHtml += '<div class="result-acquisition"><strong>Drops:</strong><ul>';
-        item.drop.forEach(drop => {
-            acquisitionHtml += `<li>${drop.location}: ${drop.chance}% (${getRarity(drop.chance)})</li>`;
-        });
-        acquisitionHtml += '</ul></div>';
-    }
-    return acquisitionHtml;
-}
-
-// Képek ellenőrzése
 function checkImages() {
-    console.log("Checking images");
     $('.result-image').each(function() {
         if (!this.complete || this.naturalWidth === 0) {
-            console.warn("Image failed to load:", this.src);
-            $(this).attr('src', PLACEHOLDER_IMAGE_URL);
+            console.error("Image failed to load:", this.src);
+            $(this).attr('src', 'path/to/placeholder-image.png');
         } else {
             console.log("Image loaded successfully:", this.src);
         }
@@ -209,8 +184,8 @@ function checkImages() {
 
 // Képbetöltés eseményfigyelők
 $(document).on('load', '.result-image', function() {
-    console.log('Image loaded successfully:', this.src);
+    console.log('Image loaded event:', this.src);
 }).on('error', '.result-image', function() {
-    console.error('Image failed to load:', this.src);
-    $(this).attr('src', PLACEHOLDER_IMAGE_URL);
+    console.error('Image failed to load event:', this.src);
+    $(this).attr('src', 'path/to/placeholder-image.png');
 });
