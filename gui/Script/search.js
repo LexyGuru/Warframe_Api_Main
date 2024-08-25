@@ -58,6 +58,8 @@ function getRarity(chance) {
 function searchDrops() {
     console.log("Search function called");
     const searchTerm = $("#search-input").val();
+    const showPrime = $("#show-prime").prop('checked');
+    const showWiki = $("#show-wiki").prop('checked');
     if (searchTerm.length < 3) {
         $("#results").html("<p>Please enter at least 3 characters to search.</p>");
         return;
