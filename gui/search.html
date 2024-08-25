@@ -4,239 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Warframe Search</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <style>
-    body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 20px;
-        background-color: #f0f0f0;
-    }
-    .container {
-        max-width: 800px;
-        margin: 0 auto;
-        background-color: white;
-        padding: 20px;
-        border-radius: 5px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    .search-box {
-        margin-bottom: 20px;
-    }
-    #search-input {
-        width: 70%;
-        padding: 10px;
-        font-size: 16px;
-    }
-    #search-button {
-        padding: 10px 20px;
-        font-size: 16px;
-        background-color: #4CAF50;
-        color: white;
-        border: none;
-        cursor: pointer;
-    }
-    .result-card {
-        border: 1px solid #ddd;
-        margin-bottom: 20px;
-        padding: 15px;
-        border-radius: 5px;
-        background-color: #f9f9f9;
-    }
-    .result-content {
-        display: flex;
-        justify-content: space-between;
-    }
-    .result-info {
-        flex: 1;
-        padding-right: 20px;
-    }
-    .result-title {
-        font-size: 1.4em;
-        font-weight: bold;
-        margin-bottom: 10px;
-        color: #333;
-    }
-    .result-description {
-        margin-bottom: 10px;
-        font-style: italic;
-        color: #666;
-    }
-    .result-details {
-        margin-bottom: 5px;
-    }
-    .level-stats-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 10px;
-    }
-    .level-stats-table th, .level-stats-table td {
-        border: 1px solid #ddd;
-        padding: 8px;
-        text-align: left;
-    }
-    .level-stats-table th {
-        background-color: #f2f2f2;
-    }
-    .result-image-container {
-        flex: 0 0 200px;
-        text-align: center;
-    }
-    .result-image {
-        max-width: 100%;
-        height: auto;
-        margin-bottom: 10px;
-        border-radius: 5px;
-    }
-    .wiki-link {
-        display: inline-block;
-        padding: 5px 10px;
-        background-color: #4CAF50;
-        color: white;
-        text-decoration: none;
-        border-radius: 3px;
-    }
-    .wiki-link:hover {
-        background-color: #45a049;
-    }
-    .common { background-color: #3498db; color: white; }
-    .uncommon { background-color: #2ecc71; color: white; }
-    .rare { background-color: #f39c12; color: white; }
-    @media (max-width: 768px) {
-        .result-content {
-            flex-direction: column;
+    <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" defer></script>
+    <script>
+        function initWebChannel() {
+            if (typeof QWebChannel === "undefined") {
+                console.log("QWebChannel not available yet, retrying...");
+                setTimeout(initWebChannel, 100);
+                return;
+            }
+            new QWebChannel(qt.webChannelTransport, function (channel) {
+                window.pyotherside = channel.objects.pyotherside;
+                console.log("QWebChannel initialized");
+                // Itt hívhatjuk meg a további inicializáló függvényeket
+                if (typeof initSearch === "function") {
+                    initSearch();
+                }
+            });
         }
-        .result-info {
-            padding-right: 0;
-            margin-bottom: 20px;
-        }
-        .result-image-container {
-            flex: none;
-        }
-    }
-    </style>
+
+        document.addEventListener("DOMContentLoaded", function() {
+            console.log("DOM fully loaded");
+            initWebChannel();
+        });
+    </script>
 </head>
 <body>
     <div class="container">
         <h1>Warframe Search</h1>
-
-        <div>
-            <input type="checkbox" id="show-prime" checked> <label for="show-prime">Show Prime Items</label>
-            <input type="checkbox" id="show-wiki" checked> <label for="show-wiki">Show Wiki Links</label>
-        </div>
-
         <div class="search-box">
-            <input type="text" id="search-input" placeholder="Search...">
+            <input type="text" id="search-input" placeholder="Enter search term...">
             <button id="search-button">Search</button>
         </div>
-
-        <div id="results"></div>
+        <div id="results" class="results-container"></div>
     </div>
-
-    <script>
-        $(document).ready(function() {
-            console.log('Search script loaded');
-
-            $("#search-button").on('click', searchItems);
-            $("#search-input").on('keyup', function(e) {
-                if (e.key === 'Enter') searchItems();
-            });
-
-            function searchItems() {
-                const searchTerm = $("#search-input").val();
-                const showPrime = $("#show-prime").prop('checked');
-                const showWiki = $("#show-wiki").prop('checked');
-
-                if (searchTerm.length < 3) {
-                    $("#results").html("<p>Please enter at least 3 characters to search.</p>");
-                    return;
-                }
-
-                $("#results").html("<p>Searching...</p>");
-
-                $.getJSON(`https://api.warframestat.us/items/search/${searchTerm}`)
-                    .done(function(itemData) {
-                        let resultsHtml = "";
-                        if (itemData.length > 0) {
-                            itemData.forEach(item => {
-                                if (!showPrime && item.name.toLowerCase().includes('prime')) {
-                                    return;
-                                }
-
-                                let wikiUrl = item.wikiaUrl || `https://warframe.fandom.com/wiki/${encodeURIComponent(item.name.replace(/ /g, '_'))}`;
-
-                                let dropInfoHtml = getDropInfo(item);
-                                let relicInfoHtml = getRelicInfo(item);
-
-                                resultsHtml += `
-                                    <div class="result-card">
-                                        <div class="result-content">
-                                            <div class="result-info">
-                                                <h2 class="result-title">${item.name}</h2>
-                                                <div class="result-details">Type: ${item.type || 'N/A'}</div>
-                                                ${item.description ? `<div class="result-description">${item.description}</div>` : ''}
-                                                ${dropInfoHtml}
-                                                ${relicInfoHtml}
-                                            </div>
-                                            <div class="result-image-container">
-                                                ${item.wikiaThumbnail ? `<img src="${item.wikiaThumbnail}" alt="${item.name}" class="result-image">` : ''}
-                                                ${showWiki ? `<a href="${wikiUrl}" class="wiki-link" target="_blank">Wiki Page</a>` : ''}
-                                            </div>
-                                        </div>
-                                    </div>
-                                `;
-                            });
-                        }
-
-                        if (resultsHtml === "") {
-                            resultsHtml = "<p>No results found for the search term.</p>";
-                        }
-
-                        $("#results").html(resultsHtml);
-                    })
-                    .fail(function(jqXHR, textStatus, errorThrown) {
-                        console.error("API request failed", textStatus, errorThrown);
-                        $("#results").html("<p>Error occurred while searching. Please try again later.</p>");
-                    });
-            }
-
-            function getDropInfo(item) {
-                let dropInfoHtml = '';
-                if (item.drops && item.drops.length > 0) {
-                    dropInfoHtml += '<div class="drop-info"><h3>Drop Locations:</h3><ul>';
-                    item.drops.forEach(drop => {
-                        dropInfoHtml += `<li>${drop.location}: ${drop.chance.toFixed(2)}%</li>`;
-                    });
-                    dropInfoHtml += '</ul></div>';
-                }
-                return dropInfoHtml;
-            }
-
-            function getRelicInfo(item) {
-                let relicInfoHtml = '';
-                if (item.components) {
-                    relicInfoHtml += '<div class="relic-info"><h3>Relic Drops:</h3><ul>';
-                    item.components.forEach(component => {
-                        if (component.drops) {
-                            component.drops.forEach(drop => {
-                                if (drop.location.includes('Relic')) {
-                                    let rarity = getRarityClass(drop.chance);
-                                    relicInfoHtml += `<li><span class="rarity ${rarity}">${component.name}</span>: ${drop.location} (${drop.chance.toFixed(2)}%)</li>`;
-                                }
-                            });
-                        }
-                    });
-                    relicInfoHtml += '</ul></div>';
-                }
-                return relicInfoHtml;
-            }
-
-            function getRarityClass(chance) {
-                if (chance <= 2) return 'rare';
-                if (chance <= 11) return 'uncommon';
-                return 'common';
-            }
-        });
-    </script>
+    <script src="Script/search.js" defer></script>
 </body>
 </html>
