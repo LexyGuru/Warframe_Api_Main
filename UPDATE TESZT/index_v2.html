@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Warframe Search</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .search-box {
+            margin-bottom: 20px;
+        }
+        #search-input {
+            width: 50%;
+            padding: 10px;
+            font-size: 16px;
+        }
+        #search-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #platform-select, #category-select {
+            padding: 10px;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        .result-card {
+            border: 1px solid #ddd;
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .result-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .common { color: #8c8c8c; }
+        .uncommon { color: #a0a; }
+        .rare { color: #d70; }
+        .result-image {
+            max-width: 100px;
+            height: auto;
+            float: right;
+            margin-left: 15px;
+        }
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+        .stats-table th, .stats-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .stats-table th {
+            background-color: #f2f2f2;
+        }
+        .wiki-link {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 5px 10px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Complete Warframe Search</h1>
+
+        <div>
+            <input type="checkbox" id="show-prime"> <label for="show-prime">Show Prime Items</label>
+            <input type="checkbox" id="show-wiki" checked> <label for="show-wiki">Show Wiki Links</label>
+        </div>
+
+        <div class="search-box">
+            <select id="platform-select" style="display: none;">
+                <option value="pc">PC</option>
+                <option value="ps4">PS4</option>
+                <option value="xb1">Xbox One</option>
+                <option value="swi">Switch</option>
+            </select>
+            <select id="category-select">
+                <option value="items">Items</option>
+                <option value="rivens">Rivens</option>
+                <option value="arcanes">Arcanes</option>
+                <option value="conclave">Conclave</option>
+                <option value="drops">Drops</option>
+                <option value="events">Events</option>
+                <option value="factions">Factions</option>
+                <option value="fissureModifiers">Fissure Modifiers</option>
+                <option value="missionTypes">Mission Types</option>
+                <option value="mods">Mods</option>
+                <option value="persistentEnemy">Persistent Enemy</option>
+                <option value="sortie">Sortie</option>
+                <option value="syndicates">Syndicates</option>
+                <option value="tutorials">Tutorials</option>
+                <option value="warframes">Warframes</option>
+                <option value="weapons">Weapons</option>
+            </select>
+            <input type="text" id="search-input" placeholder="Search...">
+            <button id="search-button">Search</button>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            $("#search-button").on('click', searchItems);
+            $("#search-input").on('keyup', function(e) {
+                if (e.key === 'Enter') searchItems();
+            });
+
+            $("#category-select").on('change', function() {
+                if ($(this).val() === 'rivens') {
+                    $("#platform-select").show();
+                } else {
+                    $("#platform-select").hide();
+                }
+            });
+
+            function searchItems() {
+                const searchTerm = $("#search-input").val();
+                const category = $("#category-select").val();
+                const showPrime = $("#show-prime").prop('checked');
+                const showWiki = $("#show-wiki").prop('checked');
+
+                if (searchTerm.length < 3) {
+                    $("#results").html("<p>Please enter at least 3 characters to search.</p>");
+                    return;
+                }
+
+                $("#results").html("<p>Searching...</p>");
+
+                let apiUrl = `https://api.warframestat.us/${category}/search/${searchTerm}`;
+
+                if (category === 'rivens') {
+                    const platform = $("#platform-select").val();
+                    apiUrl = `https://api.warframestat.us/${platform}/rivens/search/${searchTerm}`;
+                }
+
+                $.ajax({
+                    url: apiUrl,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(data) {
+                        console.log("API Data:", data);
+
+                        let resultsHtml = "";
+
+                        if (data.length > 0) {
+                            data.forEach(item => {
+                                resultsHtml += processItem(item, category, showPrime, showWiki);
+                            });
+                        } else {
+                            resultsHtml = "<p>No results found for the search term.</p>";
+                        }
+
+                        $("#results").html(resultsHtml);
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        console.error("API request failed", textStatus, errorThrown);
+                        console.error("Response:", jqXHR.responseText);
+                        $("#results").html(`
+                            <p>Error occurred while searching. Please try again later.</p>
+                            <p>Error details: ${textStatus} - ${errorThrown}</p>
+                            <p>Response: ${jqXHR.responseText}</p>
+                        `);
+                    }
+                });
+            }
+
+            function processItem(item, category, showPrime, showWiki) {
+                 // Az item neve lehet az 'item' mezőben is a drop-ok esetén
+                const itemName = item.name || item.item || 'Unknown';
+                const isPrime = itemName.toLowerCase().includes('prime');
+
+                // Csak az 'items' és 'warframes' kategóriáknál alkalmazzuk a Prime szűrőt
+                if ((category === 'items' || category === 'warframes') &&
+                    ((showPrime && !isPrime) || (!showPrime && isPrime))) {
+                    return '';
+                }
+
+                let wikiUrl = item.wikiaUrl || `https://warframe.fandom.com/wiki/${encodeURIComponent(itemName.replace(/ /g, '_'))}`;
+
+                // Fix the image URL
+                let imageUrl = item.wikiaThumbnail ? fixImageUrl(item.wikiaThumbnail) : '';
+
+                let htmlContent = `
+                    <div class="result-card">
+                        ${imageUrl ? `<img src="${imageUrl}" alt="${itemName}" class="result-image" onerror="this.style.display='none';">` : ''}
+                        <div class="result-title">${itemName}</div>
+                        <div>Type: ${item.type || category}</div>
+                        ${item.description ? `<div>${item.description}</div>` : ''}
+                `;
+
+                if (category === 'drops') {
+                    htmlContent += getDropInfo(item);
+                } else {
+                    switch(category) {
+                        case 'items':
+                        case 'warframes':
+                        case 'weapons':
+                            htmlContent += getItemInfo(item);
+                            break;
+                        case 'mods':
+                            htmlContent += getModInfo(item);
+                            break;
+                        case 'arcanes':
+                            htmlContent += getArcaneInfo(item);
+                            break;
+                        case 'rivens':
+                            htmlContent += getRivenInfo(item);
+                            break;
+                        default:
+                            htmlContent += getGenericInfo(item);
+                    }
+                }
+
+                htmlContent += `
+                        ${showWiki ? `<a href="${wikiUrl}" target="_blank" class="wiki-link">Wiki Page</a>` : ''}
+                    </div>
+                `;
+
+                return htmlContent;
+            }
+
+            function fixImageUrl(url) {
+                // Remove the "revision/latest" part from the URL
+                return url.replace(/\/revision\/latest.*$/, '');
+            }
+
+            function getDropInfo(item) {
+                let dropInfoHtml = '<div class="drop-info">';
+                dropInfoHtml += `<p><strong>Location:</strong> ${item.place || 'Unknown'}</p>`;
+                dropInfoHtml += `<p><strong>Rarity:</strong> ${item.rarity || 'Unknown'}</p>`;
+                dropInfoHtml += `<p><strong>Chance:</strong> ${item.chance ? item.chance.toFixed(2) + '%' : 'Unknown'}</p>`;
+                dropInfoHtml += '</div>';
+                return dropInfoHtml;
+            }
+
+            function getItemInfo(item) {
+                let infoHtml = '';
+
+                if (item.components) {
+                    infoHtml += '<h3>Components:</h3><ul>';
+                    item.components.forEach(component => {
+                        infoHtml += `<li>${component.name}`;
+                        if (component.itemCount) {
+                            infoHtml += ` (x${component.itemCount})`;
+                        }
+                        infoHtml += '</li>';
+                    });
+                    infoHtml += '</ul>';
+                }
+
+                if (item.drops) {
+                    infoHtml += '<h3>Drop Locations:</h3><ul>';
+                    item.drops.forEach(drop => {
+                        infoHtml += `<li>${drop.location}: ${drop.chance ? (drop.chance * 100).toFixed(2) + '%' : 'Unknown'}</li>`;
+                    });
+                    infoHtml += '</ul>';
+                }
+
+                if (item.components) {
+                    infoHtml += getRelicInfo(item);
+                }
+
+                return infoHtml;
+            }
+
+            function getModInfo(mod) {
+                let modInfoHtml = '<h3>Mod Statistics:</h3>';
+
+                if (mod.levelStats) {
+                    modInfoHtml += '<table class="stats-table"><tr><th>Rank</th><th>Effect</th></tr>';
+                    mod.levelStats.forEach((stat, index) => {
+                        modInfoHtml += `<tr><td>${index}</td><td>${Array.isArray(stat.stats) ? stat.stats.join(', ') : stat.stats}</td></tr>`;
+                    });
+                    modInfoHtml += '</table>';
+                }
+
+                if (mod.polarity) {
+                    modInfoHtml += `<p><strong>Polarity:</strong> ${mod.polarity}</p>`;
+                }
+
+                if (mod.rarity) {
+                    modInfoHtml += `<p><strong>Rarity:</strong> ${mod.rarity}</p>`;
+                }
+
+                if (mod.fusionLimit) {
+                    modInfoHtml += `<p><strong>Max Rank:</strong> ${mod.fusionLimit}</p>`;
+                }
+
+                return modInfoHtml;
+            }
+
+            function getArcaneInfo(arcane) {
+                let arcaneInfoHtml = '<h3>Arcane Effects:</h3>';
+
+                if (arcane.levelStats) {
+                    arcaneInfoHtml += '<table class="stats-table"><tr><th>Rank</th><th>Effect</th></tr>';
+                    arcane.levelStats.forEach((stat, index) => {
+                        arcaneInfoHtml += `<tr><td>${index}</td><td>${Array.isArray(stat.stats) ? stat.stats.join(', ') : stat.stats}</td></tr>`;
+                    });
+                    arcaneInfoHtml += '</table>';
+                }
+
+                if (arcane.rarity) {
+                    arcaneInfoHtml += `<p><strong>Rarity:</strong> ${arcane.rarity}</p>`;
+                }
+
+                return arcaneInfoHtml;
+            }
+
+            function getRivenInfo(riven) {
+                let rivenInfoHtml = '<h3>Riven Mod Information:</h3>';
+
+                if (riven.attributes) {
+                    rivenInfoHtml += '<h4>Attributes:</h4><ul>';
+                    riven.attributes.forEach(attr => {
+                        rivenInfoHtml += `<li>${attr.name}: ${attr.value}${attr.units || ''}</li>`;
+                    });
+                    rivenInfoHtml += '</ul>';
+                }
+
+                if (riven.weaponType) {
+                    rivenInfoHtml += `<p><strong>Weapon Type:</strong> ${riven.weaponType}</p>`;
+                }
+
+                if (riven.compatibility) {
+                    rivenInfoHtml += `<p><strong>Compatible with:</strong> ${riven.compatibility}</p>`;
+                }
+
+                if (riven.mastery) {
+                    rivenInfoHtml += `<p><strong>Mastery Requirement:</strong> ${riven.mastery}</p>`;
+                }
+
+                if (riven.rerolls) {
+                    rivenInfoHtml += `<p><strong>Rerolls:</strong> ${riven.rerolls}</p>`;
+                }
+
+                return rivenInfoHtml;
+            }
+
+            function getGenericInfo(item) {
+                let infoHtml = '';
+                for (let key in item) {
+                    if (item.hasOwnProperty(key) && typeof item[key] !== 'object') {
+                        infoHtml += `<p><strong>${key}:</strong> ${item[key]}</p>`;
+                    }
+                }
+                return infoHtml;
+            }
+
+            function getRelicInfo(item) {
+                let relicInfoHtml = '';
+                if (item.components) {
+                    let relicDrops = {};
+
+                    item.components.forEach(component => {
+                        if (component.drops) {
+                            component.drops.forEach(drop => {
+                                if (drop.location.includes('Relic')) {
+                                    let [relicName, refinement] = drop.location.split(' ');
+                                    if (refinement) refinement = `(${refinement})`;
+                                    else refinement = '(Intact)';
+
+                                    if (!relicDrops[component.name]) relicDrops[component.name] = {};
+                                    if (!relicDrops[component.name][relicName]) relicDrops[component.name][relicName] = {};
+                                    relicDrops[component.name][relicName][refinement] = drop.chance;
+                                }
+                        });
+                    }
+            });
+
+            relicInfoHtml += '<div class="relic-info"><h3>Relic Drops:</h3>';
+
+            for (let component in relicDrops) {
+                relicInfoHtml += `<h4>${component}</h4><ul>`;
+                for (let relic in relicDrops[component]) {
+                    relicInfoHtml += `<li>${relic}:`;
+                    let chances = [];
+                    for (let refinement in relicDrops[component][relic]) {
+                        let chance = relicDrops[component][relic][refinement];
+                        let rarity = getRarityClass(chance);
+                        chances.push(`<span class="${rarity}">${refinement}: ${chance.toFixed(2)}%</span>`);
+                    }
+                    relicInfoHtml += ` ${chances.join(', ')}</li>`;
+                }
+                relicInfoHtml += '</ul>';
+            }
+
+            relicInfoHtml += '</div>';
+        }
+        return relicInfoHtml;
+    }
+
+    function getRarityClass(chance) {
+        if (chance <= 2) return 'rare';
+        if (chance <= 11) return 'uncommon';
+        return 'common';
+    }
+
+        });
+    </script>
+</body>
+</html>
